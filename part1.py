@@ -124,7 +124,7 @@ class Game():
             Use the SPEED constant to set how often the move tasks
             are generated.
         """
-        SPEED = 0.15     #speed of snake updates (sec)
+        SPEED = 0.30     #speed of snake updates (sec)
         while self.gameNotOver:
             #complete the method implementation below
             pass #remove this line from your implemenation
@@ -174,6 +174,15 @@ class Game():
         """
         lastX, lastY = self.snakeCoordinates[-1]
         #complete the method implementation below
+        match self.direction:
+            case "Left": 
+                return (lastX-1, lastY)
+            case "Right":
+                return (lastX+1, lastY)
+            case "Up":
+                return (lastX, lastY-1)
+            case "Down":
+                return (lastX, lastY+1)
 
 
     def isGameOver(self, snakeCoordinates) -> None:
@@ -185,7 +194,14 @@ class Game():
             field and also adds a "game_over" task to the queue. 
         """
         x, y = snakeCoordinates
-        #complete the method implementation below
+        
+        # Check if the snake has touched or passed any walls
+        if y <= 0 or y >= WINDOW_HEIGHT or x <= 0 or x >= WINDOW_WIDTH: # snake has either touched or passed a wall
+            self.gameNotOver = False
+            self.queue.put({"game_over": True})
+        
+        # Check if the snake has bit itself
+        
 
     def createNewPrey(self) -> None:
         """ 
@@ -199,7 +215,15 @@ class Game():
             away from the walls. 
         """
         THRESHOLD = 15   #sets how close prey can be to borders
-        #complete the method implementation below
+        
+        # Generate the new coordinates for the new prey 
+        x_pos = random.randint(THRESHOLD, WINDOW_WIDTH-THRESHOLD)
+        y_pos = random.randint(THRESHOLD, WINDOW_HEIGHT-THRESHOLD)
+        
+        new_prey_coord = (x_pos - 5, y_pos - 5, x_pos + 5, y_pos + 5)
+        
+        # Add a "prey" task to the queue with the new calculated coordinates
+        self.queue.put({"prey": new_prey_coord})
 
 
 if __name__ == "__main__":
@@ -208,8 +232,8 @@ if __name__ == "__main__":
     WINDOW_HEIGHT = 300 
     SNAKE_ICON_WIDTH = 15
     
-    BACKGROUND_COLOUR = "green"   #you may change this colour if you wish
-    ICON_COLOUR = "yellow"        #you may change this colour if you wish
+    BACKGROUND_COLOUR = "black"   #you may change this colour if you wish
+    ICON_COLOUR = "white"        #you may change this colour if you wish
 
     gameQueue = queue.Queue()     #instantiate a queue object using python's queue class
 
