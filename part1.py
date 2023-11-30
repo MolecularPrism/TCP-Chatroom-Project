@@ -160,7 +160,23 @@ class Game():
             and position) should be correctly updated.
         """
         NewSnakeCoordinates = self.calculateNewCoordinates()
-        #complete the method implementation below
+        
+        # Update snake coordinates list, if we assume the last item in the list is the head of the snake
+        self.snakeCoordinates.pop(0) 
+        self.snakeCoordinates.append(NewSnakeCoordinates)
+        
+        # Check if the movement caused the game to be over
+        self.isGameOver(NewSnakeCoordinates)
+        
+        # Check if a prey has been captured, and if so add a new prey
+        # Get the current prey coordinates from the canvas
+        prey_coords = gui.canvas.coords(gui.preyIcon)
+        
+        head_x, head_y = NewSnakeCoordinates
+        if prey_coords and prey_coords[0] <= head_x <= prey_coords[2] and prey_coords[1] <= head_y <= prey_coords[3]:
+            self.score += 1
+            self.createNewPrey()
+            self.queue.put({"score": self.score})
 
 
     def calculateNewCoordinates(self) -> tuple:
@@ -196,11 +212,9 @@ class Game():
         x, y = snakeCoordinates
         
         # Check if the snake has touched or passed any walls
-        if y <= 0 or y >= WINDOW_HEIGHT or x <= 0 or x >= WINDOW_WIDTH: # snake has either touched or passed a wall
+        if y <= 0 or y >= WINDOW_HEIGHT or x <= 0 or x >= WINDOW_WIDTH or (x,y) in self.snakeCoordinates[1:]: # snake has either touched or passed a wall, or bit itself
             self.gameNotOver = False
             self.queue.put({"game_over": True})
-        
-        # Check if the snake has bit itself
         
 
     def createNewPrey(self) -> None:
