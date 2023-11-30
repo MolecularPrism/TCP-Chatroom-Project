@@ -124,10 +124,18 @@ class Game():
             Use the SPEED constant to set how often the move tasks
             are generated.
         """
-        SPEED = 0.30     #speed of snake updates (sec)
+        SPEED = 0.1     #speed of snake updates (sec)
         while self.gameNotOver:
-            #complete the method implementation below
-            pass #remove this line from your implemenation
+            # Flatten the list of tuples for the coordinates
+            points = [coord for point in self.snakeCoordinates for coord in point]
+            
+            # Update the snake's position on the canvas
+            gui.canvas.coords(gui.snakeIcon, *points)
+            
+            # Move the snake
+            self.move()
+            time.sleep(SPEED)
+            
 
     def whenAnArrowKeyIsPressed(self, e) -> None:
         """ 
@@ -160,6 +168,7 @@ class Game():
             and position) should be correctly updated.
         """
         NewSnakeCoordinates = self.calculateNewCoordinates()
+        BUFFER = 2
         
         # Update snake coordinates list, if we assume the last item in the list is the head of the snake
         self.snakeCoordinates.pop(0) 
@@ -173,11 +182,14 @@ class Game():
         prey_coords = gui.canvas.coords(gui.preyIcon)
         
         head_x, head_y = NewSnakeCoordinates
-        if prey_coords and prey_coords[0] <= head_x <= prey_coords[2] and prey_coords[1] <= head_y <= prey_coords[3]:
+        prey_x1, prey_y1, prey_x2, prey_y2 = prey_coords
+        
+        # Need to implement a buffer because the size of the prey and snake don't match, so even if they touch, prey could be not read as "eaten"
+        if (prey_x1 - BUFFER <= head_x <= prey_x2 + BUFFER and prey_y1 - BUFFER <= head_y <= prey_y2 + BUFFER): 
             self.score += 1
+            self.snakeCoordinates.append(NewSnakeCoordinates)
             self.createNewPrey()
             self.queue.put({"score": self.score})
-
 
     def calculateNewCoordinates(self) -> tuple:
         """
@@ -189,17 +201,16 @@ class Game():
             It is used by the move() method.    
         """
         lastX, lastY = self.snakeCoordinates[-1]
-        #complete the method implementation below
+        
         match self.direction:
             case "Left": 
-                return (lastX-1, lastY)
+                return (lastX-SNAKE_ICON_WIDTH, lastY)
             case "Right":
-                return (lastX+1, lastY)
+                return (lastX+SNAKE_ICON_WIDTH, lastY)
             case "Up":
-                return (lastX, lastY-1)
+                return (lastX, lastY-SNAKE_ICON_WIDTH)
             case "Down":
-                return (lastX, lastY+1)
-
+                return (lastX, lastY+SNAKE_ICON_WIDTH)
 
     def isGameOver(self, snakeCoordinates) -> None:
         """
@@ -212,7 +223,7 @@ class Game():
         x, y = snakeCoordinates
         
         # Check if the snake has touched or passed any walls
-        if y <= 0 or y >= WINDOW_HEIGHT or x <= 0 or x >= WINDOW_WIDTH or (x,y) in self.snakeCoordinates[1:]: # snake has either touched or passed a wall, or bit itself
+        if y <= 0 or y >= WINDOW_HEIGHT or x <= 0 or x >= WINDOW_WIDTH or (x,y) in self.snakeCoordinates[:-2]: # snake has either touched or passed a wall, or bit itself
             self.gameNotOver = False
             self.queue.put({"game_over": True})
         
@@ -233,6 +244,9 @@ class Game():
         # Generate the new coordinates for the new prey 
         x_pos = random.randint(THRESHOLD, WINDOW_WIDTH-THRESHOLD)
         y_pos = random.randint(THRESHOLD, WINDOW_HEIGHT-THRESHOLD)
+        
+        if (x_pos, y_pos) in self.snakeCoordinates: # make sure the prey doesn't spawn on the snake's body
+            self.createNewPrey()
         
         new_prey_coord = (x_pos - 5, y_pos - 5, x_pos + 5, y_pos + 5)
         
