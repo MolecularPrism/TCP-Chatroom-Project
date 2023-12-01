@@ -5,16 +5,23 @@ import threading
 class ChatClient:
     def __init__(self, window):
         self.client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.GUI_setup(window)
 
         # Connect to the server
         self.client_socket.connect(('127.0.0.1', 3333))
 
         # Start a thread to handle receiving messages
-        threading.Thread(target=self.receive_messages).start()
+        threading.Thread(target=self.receive_messages, args=(window,)).start()
+        
+        self.client_num = int()
+        self.GUI_setup(window)
+
+        
+
+        
+        
 
     def GUI_setup(self, window):
-        window.title("Chat Client")
+        window.title(f"Chat Client {self.client_num}")
 
         self.messages_text = Text(window)
         self.messages_text.pack(fill=BOTH, expand=True)
@@ -27,14 +34,19 @@ class ChatClient:
 
 
 
-    def receive_messages(self):
+    def receive_messages(self, window):
         while True:
             try:
                 message = self.client_socket.recv(4096).decode("utf-8")
 
                 #check if message is valid, if it is we display on the log
-                if(message != None):
+                if(message != None and "(special_code)" not in message):
                     self.messages_text.insert(END, f"{message}\n")
+
+                elif("(special_code)" in message):
+                    self.client_num = int(message[-1])
+                    print(f"client number is {self.client_num}")
+                    window.title(f"Chat Client {self.client_num}")
             except:
                 print("error in receiving message")
                 self.client_socket.close()

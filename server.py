@@ -11,6 +11,8 @@ class ChatServer:
         self.server_socket.listen(5)
 
         self.clients = []
+        self.client_num = []
+        self.client_dict = dict(zip(self.client_num, self.clients))
 
         print("Server ready to receive")
 
@@ -32,17 +34,29 @@ class ChatServer:
             # Add the new client to the list
             self.clients.append(client_socket)
 
+            #here we need to assign each client their #s
+            for client in self.clients:
+                self.client_num.append(self.clients.index(client) + 1)
+
+                #send client # to each client
+                message = f"(special_code) Client {self.clients.index(client) + 1}"
+                
+                client.send(message.encode('utf-8'))
+
+
+
+
             # Start a thread to handle messages from this client
             threading.Thread(target=self.handle_client, args=(client_socket,)).start()
 
     def handle_client(self, client_socket):
         while True:
             try:
-                message = client_socket.recv(1024).decode('utf-8')
+                message = client_socket.recv(1024).decode('utf-8') #get message from a client
 
-                # Broadcast the message to all other clients
+                #deliver that message to the OTHER client 
                 for client in self.clients:
-                    if client != client_socket:
+                    if client != client_socket: #other client
                         try:
                             client.send(message.encode('utf-8'))
                         except socket.error:
