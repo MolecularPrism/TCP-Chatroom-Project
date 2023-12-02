@@ -13,6 +13,8 @@ class ChatClient:
         threading.Thread(target=self.receive_messages, args=(window,)).start()
         
         self.client_num = int()
+        self.client_addr = int()
+        #self.client_addr = int()
         self.GUI_setup(window)
         window.bind('<Return>', self.send_message)
 
@@ -27,11 +29,16 @@ class ChatClient:
         self.messages_text = Text(window)
         self.messages_text.pack(fill=BOTH, expand=True)
 
-        self.entry = Entry(window)
+        self.entry = Entry(window, width=100)
         self.entry.pack()
 
-        send_btn = Button(window, text="Send", command=self.send_message)
-        send_btn.pack()
+
+        self.addr_label = Label(window, text=f" ")
+        self.addr_label.pack(anchor='nw')
+
+        self.client_num_label = Label(window, text=f" ")
+        self.client_num_label.pack(anchor="nw")
+
         
 
 
@@ -49,12 +56,19 @@ class ChatClient:
                         
                     else:
                         self.messages_text.insert(END, f"Client 1: {message}\n")
+                
     
 
                 elif("(special_code)" in message):
-                    self.client_num = int(message[-1])
-                    print(f"client number is {self.client_num}")
+                    self.client_num = int(message[22])
+                    self.client_addr = int(message[29:])
+                    print(f"client number is {self.client_num} and client address is {self.client_addr}\n")
                     window.title(f"Chat Client {self.client_num}")
+
+                    self.client_num_label.config(text=f"Client {self.client_num}")
+                    self.addr_label.config(text=f"Address: {self.client_addr}")
+
+                    
             except:
                 print("error in receiving message")
                 self.client_socket.close()
@@ -62,7 +76,7 @@ class ChatClient:
 
     def send_message(self, e):
         message = self.entry.get()
-        if (message != None):
+        if (len(message) > 0):
             try:
                 self.client_socket.send(message.encode('utf-8'))
                 self.entry.delete(0, END)

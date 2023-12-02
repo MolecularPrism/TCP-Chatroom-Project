@@ -12,6 +12,7 @@ class ChatServer:
 
         self.clients = []
         self.client_num = []
+        self.client_addr_list = []
 
         print("Server ready to receive")
 
@@ -33,6 +34,9 @@ class ChatServer:
             self.clients.append(client_socket)
 
             print(f"Connection from {client_address}")
+            self.client_addr_list.append(client_address[1])
+
+          
 
             
          
@@ -41,11 +45,13 @@ class ChatServer:
             for client in self.clients:
 
                 print(f"client is {client} and len is {len(self.clients)}\n")
-        
-                self.client_num.append(self.clients.index(client) + 1)
+                client_index = self.clients.index(client)
+                self.client_num.append(client_index + 1)
+                
+                
 
                 #send client # to each client
-                message = f"(special_code) Client {self.clients.index(client) + 1}"
+                message = f"(special_code) Client {client_index + 1} Addr {self.client_addr_list[client_index]}"
                 
                 client.send(message.encode('utf-8'))
 
