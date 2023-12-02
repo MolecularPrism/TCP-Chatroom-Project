@@ -14,6 +14,7 @@ class ChatClient:
         
         self.client_num = int()
         self.GUI_setup(window)
+        window.bind('<Return>', self.send_message)
 
         
 
@@ -31,6 +32,8 @@ class ChatClient:
 
         send_btn = Button(window, text="Send", command=self.send_message)
         send_btn.pack()
+        
+
 
 
 
@@ -41,7 +44,12 @@ class ChatClient:
 
                 #check if message is valid, if it is we display on the log
                 if(message != None and "(special_code)" not in message):
-                    self.messages_text.insert(END, f"{message}\n")
+                    if(self.client_num == 1):
+                        self.messages_text.insert(END, f"Client 2: {message}\n")
+                        
+                    else:
+                        self.messages_text.insert(END, f"Client 1: {message}\n")
+    
 
                 elif("(special_code)" in message):
                     self.client_num = int(message[-1])
@@ -52,13 +60,13 @@ class ChatClient:
                 self.client_socket.close()
 
 
-    def send_message(self):
+    def send_message(self, e):
         message = self.entry.get()
         if (message != None):
             try:
                 self.client_socket.send(message.encode('utf-8'))
                 self.entry.delete(0, END)
-                self.messages_text.insert(END, f"Sent: {message}\n")
+                self.messages_text.insert(END, f"                   Client {self.client_num}: {message}\n")
                 self.messages_text.see(END)  # Scroll to the end
             except:
                 print("ERROR in send")

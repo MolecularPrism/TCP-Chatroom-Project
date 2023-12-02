@@ -12,7 +12,6 @@ class ChatServer:
 
         self.clients = []
         self.client_num = []
-        self.client_dict = dict(zip(self.client_num, self.clients))
 
         print("Server ready to receive")
 
@@ -29,13 +28,20 @@ class ChatServer:
     def accept_clients(self):
         while True:
             client_socket, client_address = self.server_socket.accept()
-            print(f"Connection from {client_address}")
 
             # Add the new client to the list
             self.clients.append(client_socket)
 
+            print(f"Connection from {client_address}")
+
+            
+         
+
             #here we need to assign each client their #s
             for client in self.clients:
+
+                print(f"client is {client} and len is {len(self.clients)}\n")
+        
                 self.client_num.append(self.clients.index(client) + 1)
 
                 #send client # to each client
@@ -54,6 +60,7 @@ class ChatServer:
             try:
                 message = client_socket.recv(1024).decode('utf-8') #get message from a client
 
+
                 #deliver that message to the OTHER client 
                 for client in self.clients:
                     if client != client_socket: #other client
@@ -64,8 +71,10 @@ class ChatServer:
                             self.clients.remove(client)
 
                 # Update the GUI with the received message
-                self.messages_text.insert(END, f"{message}\n")
-                self.messages_text.see(END)  # Scroll to the end
+             
+
+                self.messages_text.insert(END, f"Client {self.client_num[self.clients.index(client_socket) + 1]}: {message}\n")
+               
 
             except Exception as e:
                 print(f"Error handling client: {e}")
